@@ -4,11 +4,16 @@
 
 int main()
 {
-  sf::RenderWindow window(sf::VideoMode(1280, 720), "SFML works!");
-  Game g(sf::Vector2f(1280.0f, 720.0f));
+  srand(time(0));
+  sf::RenderWindow window(sf::VideoMode(1280, 1080), "SFML works!");
+  sf::View v = window.getView();
+  v.setSize(1280 * 2, 1080 * 2);
+  //v.setCenter(v.getSize());
+  window.setView(v);
+  Game g(sf::Vector2f(1280, 1080));
   Timer dt;
   dt.Start();
-
+  bool firstFrame = true;
   while (window.isOpen())
   {
     sf::Event e;
@@ -21,7 +26,9 @@ int main()
     }
 
     window.clear();
-    g.Tick(dt.Stop(), &window);
+    g.Tick((float)dt.Stop() * !firstFrame, &window);
+    //g.Tick(0.1f, &window);
     window.display();
+    firstFrame = false;
   }
 }

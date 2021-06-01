@@ -16,19 +16,21 @@ public:
   void SetMin(const sf::Vector2f& min);
   void SetMax(const sf::Vector2f& max);
   void CreateChildren(int maxDepth);
-  void AddObject(Object* obj);
+  void AddObject(Object* obj, const sf::Vector2f& offset);
   void GetObjectsInside(const sf::Vector2f& point,
                         float rad,
-                        std::vector<Object*>& outVector);
+                        std::vector<Object*>& outVector,
+                        const sf::Vector2f& offset);
 
-  bool Intersects(const sf::Vector2f& center, float rad);
+  bool Intersects(const sf::Vector2f& center, float rad, const sf::Vector2f& offset);
 
   void Clean();
 
   int GetDepth() const;
   const sf::Vector2f& GetMin() const;
   const sf::Vector2f& GetMax() const;
-  void Draw(sf::RenderWindow* wnd_p, int startDepth, int maxDepth);
+  void Draw(sf::RenderWindow* wnd_p, int startDepth, int maxDepth,
+            const sf::Vector2f& offset);
 
 private:
   int myDepth;

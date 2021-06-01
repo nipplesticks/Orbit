@@ -65,15 +65,15 @@ void Quad::CreateChildren(int maxDepth)
   }
 }
 
-void Quad::AddObject(Object* obj)
+void Quad::AddObject(Object* obj, const sf::Vector2f& offset)
 {
   if (!myIsLeaf)
   {
     for (int i = 0; i < 4; i++)
     {
-      if (myChildren[i]->Intersects(obj->GetPosition(), obj->GetRadius()))
+      if (myChildren[i]->Intersects(obj->GetPosition(), obj->GetRadius(), offset))
       {
-        myChildren[i]->AddObject(obj);
+        myChildren[i]->AddObject(obj, offset);
       }
     }
   }
@@ -85,15 +85,16 @@ void Quad::AddObject(Object* obj)
 
 void Quad::GetObjectsInside(const sf::Vector2f& point,
                             float rad,
-                            std::vector<Object*>& outVector)
+                            std::vector<Object*>& outVector,
+                            const sf::Vector2f& offset)
 {
   if (!myIsLeaf)
   {
     for (int i = 0; i < 4; i++)
     {
-      if (myChildren[i]->Intersects(point, rad))
+      if (myChildren[i]->Intersects(point, rad, offset))
       {
-        myChildren[i]->GetObjectsInside(point, rad, outVector);
+        myChildren[i]->GetObjectsInside(point, rad, outVector, offset);
       }
     }
   }
@@ -103,14 +104,14 @@ void Quad::GetObjectsInside(const sf::Vector2f& point,
   }
 }
 
-bool Quad::Intersects(const sf::Vector2f& center, float rad)
+bool Quad::Intersects(const sf::Vector2f& center, float rad, const sf::Vector2f& offset)
 {
   sf::Vector2f point = center;
 
-  if (point.x > myMax.x) point.x = myMax.x;
-  if (point.x < myMin.x) point.x = myMin.x;
-  if (point.y > myMax.y) point.x = myMax.y;
-  if (point.y < myMin.y) point.x = myMin.y;
+  if (point.x > myMax.x + offset.x) point.x = myMax.x + offset.x;
+  if (point.x < myMin.x + offset.x) point.x = myMin.x + offset.x;
+  if (point.y > myMax.y + offset.y) point.x = myMax.y + offset.y;
+  if (point.y < myMin.y + offset.y) point.x = myMin.y + offset.y;
 
   sf::Vector2f dir = point - center;
   float distSqrd = dir.x * dir.x + dir.y * dir.y;
@@ -145,20 +146,20 @@ const sf::Vector2f& Quad::GetMax() const
   return myMax;
 }
 
-void Quad::Draw(sf::RenderWindow* wnd_p, int startDepth, int maxDepth)
+void Quad::Draw(sf::RenderWindow* wnd_p, int startDepth, int maxDepth, const sf::Vector2f& offset)
 {
   if (!myIsLeaf)
   {
     for (int i = 0; i < 4; i++)
-      myChildren[i]->Draw(wnd_p, startDepth, maxDepth);
+      myChildren[i]->Draw(wnd_p, startDepth, maxDepth, offset);
   }
   if (myDepth >= startDepth && myDepth <= maxDepth)
   {
     sf::RectangleShape rs;
-    rs.setPosition(myMin);
+    rs.setPosition(myMin + offset);
     rs.setSize(myMax - myMin);
     rs.setFillColor(sf::Color::Transparent);
-    rs.setOutlineThickness(-1.0f);
+    rs.setOutlineThickness(-10.0f);
     rs.setOutlineColor(sf::Color::Magenta);
     wnd_p->draw(rs);
   }

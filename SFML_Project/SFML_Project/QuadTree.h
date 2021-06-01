@@ -7,6 +7,7 @@ public:
   QuadTree(const sf::Vector2f& minSize, const sf::Vector2f& size, int maxDepth = 5);
   ~QuadTree();
 
+  void SetPosition(const sf::Vector2f& position);
   void AddObject(Object* obj);
   void GetObjects(const sf::Vector2f& point, float rad, std::vector<Object*>& outVector);
   void ClearObjects();
@@ -14,5 +15,6 @@ public:
 
 private:
   Quad myRoot;
+  sf::Vector2f myPosition;
 
 };
