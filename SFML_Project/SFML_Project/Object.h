@@ -1,13 +1,16 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <mutex>
+#include <deque>
 
 class Object
 {
 private:
+  static const size_t MAX_TRACE_SIZE = 500;
   static std::mutex mutex_flag;
 
 public:
+  static size_t trace_res;
   static float MASS_SCALE;
   static sf::Vector2f GetForceBetween(const Object& a, const Object& b);
   static float CalculateMass(float r);
@@ -47,4 +50,9 @@ private:
   sf::Vector2f myVelocity;
   sf::Vector2f myAcceleration;
   sf::Vector2f myForce;
+  int          myTraceIdx;
+  int          myTraceCount[2];
+  sf::Vertex   myTrace[2][MAX_TRACE_SIZE];
+  size_t       myFrameCounter;
+  sf::Color    myColor;
 };

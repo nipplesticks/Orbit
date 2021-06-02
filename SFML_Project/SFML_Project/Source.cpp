@@ -27,7 +27,6 @@ int main()
 
     window.clear();
     g.Tick((float)dt.Stop() * !firstFrame, &window);
-    //g.Tick(0.1f, &window);
     window.display();
     firstFrame = false;
   }

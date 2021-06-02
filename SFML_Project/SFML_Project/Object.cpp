@@ -3,6 +3,7 @@
 
 std::mutex Object::mutex_flag;
 float Object::MASS_SCALE = 1.0f;
+size_t Object::trace_res = 10;
 
 sf::Vector2f Object::GetForceBetween(const Object& a, const Object& b)
 {
@@ -51,6 +52,14 @@ Object::Object()
   myForce = sf::Vector2f(0.0f, 0.0f);
   myAcceleration = sf::Vector2f(0.0f, 0.0f);
   myVelocity = sf::Vector2f(0.0f, 0.0f);
+  myTraceIdx = 0;
+  memset(myTraceCount, 0, sizeof(myTraceCount));
+  memset(myTrace, 0, sizeof(myTrace));
+  myColor.r = rand() % 206 + 50;
+  myColor.g = rand() % 206 + 50;
+  myColor.b = rand() % 206 + 50;
+  myColor.a = 255;
+  myShape.setFillColor(myColor);
 }
 
 Object::~Object()
@@ -95,6 +104,20 @@ void Object::Update(float dt)
 {
   _applyForces();
   _updatePosition(dt);
+
+  sf::Vertex v;
+  v.position = GetPosition();
+  v.color = myColor;
+  v.texCoords = sf::Vector2f(0.0f, 0.0f);
+
+  if (myFrameCounter++ % Object::trace_res == 0)
+  {
+    if (myTraceCount[myTraceIdx] >= Object::MAX_TRACE_SIZE)
+      myTraceIdx = (myTraceIdx + 1) % 2;
+    myTrace[myTraceIdx][myTraceCount[myTraceIdx]++] = v;
+    int idx = (myTraceIdx + 1) % 2;
+    myTraceCount[idx] = myTraceCount[idx] - 1 >= 0 ? myTraceCount[idx] - 1 : 0;
+  }
 }
 
 float Object::GetMass() const
@@ -146,6 +169,14 @@ bool Object::Intersects(const Object& other)
 void Object::Draw(sf::RenderWindow* window_p)
 {
   window_p->draw(myShape);
+  if (GetRadius() > 1.0f)
+  {
+    int idx = (myTraceIdx + 1) % 2;
+    if (myTraceCount[myTraceIdx] > 0)
+      window_p->draw(myTrace[myTraceIdx], myTraceCount[myTraceIdx], sf::PrimitiveType::LineStrip);
+    if (myTraceCount[idx])
+      window_p->draw(myTrace[idx] + Object::MAX_TRACE_SIZE - myTraceCount[idx], myTraceCount[idx], sf::PrimitiveType::LineStrip);
+  }
 }
 
 void Object::_applyForces()

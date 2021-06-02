@@ -2,7 +2,7 @@
 #include <iostream>
 
 Game::Game(const sf::Vector2f& winSize) :
-  myQuadTree(sf::Vector2f(0.0f,0.0f), winSize * 10.f, 5)
+  myQuadTree(sf::Vector2f(0.0f,0.0f), winSize * 20.f, 7)
 {
   myTexture.loadFromFile("Assets/Untitled.png");
   myTexture.setRepeated(true);
@@ -13,10 +13,10 @@ Game::Game(const sf::Vector2f& winSize) :
   myMaxDepth = 0;
   Object::MASS_SCALE = 2000.0f;
 
-  Object obj;
-  obj.SetMass(15000.0f);
-  obj.SetPosition(winSize.x * 0.5f, winSize.y * 0.5f);
-  myObjects.push_back(obj);
+  Object obj1;
+  obj1.SetMass(99999.0f);
+  obj1.SetPosition(winSize.x * 0.5f, winSize.y * 0.5f);
+  myObjects.push_back(obj1);
   myStar_p = &myObjects.back();
   myQuadTree.AddObject(&myObjects.back());
 
@@ -25,9 +25,11 @@ Game::Game(const sf::Vector2f& winSize) :
     bool set = false;
     while (!set)
     {
+      Object obj;
       set = true;
       obj.SetPosition(rand() % ((int)winSize.x * 2) ,rand() % ((int)winSize.y * 2));
-      obj.SetMass(rand() % 500 + 1);
+      obj.SetPosition(obj.GetPosition() - myStar_p->GetPosition());
+      obj.SetMass(rand() % 1000 + 300);
 
       std::vector<Object*> arr;
       myQuadTree.GetObjects(obj.GetPosition(), obj.GetRadius(), arr);
@@ -47,7 +49,10 @@ Game::Game(const sf::Vector2f& winSize) :
       if (!set)
         continue;
 
-      obj.SetVelocity(rand() % 250 + 50, rand() % 250 + 50);
+      int d = rand();
+      int s = rand() % 500 + 50;
+
+      obj.SetVelocity(std::sin(d) * (float)s, std::cos(d) * (float)s);
       myObjects.push_back(obj);
       myQuadTree.AddObject(&myObjects.back());
     }
