@@ -10,7 +10,8 @@ private:
   static std::mutex mutex_flag;
 
 public:
-  static size_t trace_res;
+  static float NO_COL_TIMER;
+  static float trace_res;
   static float MASS_SCALE;
   static sf::Vector2f GetForceBetween(const Object& a, const Object& b);
   static float CalculateMass(float r);
@@ -37,7 +38,7 @@ public:
   const sf::Vector2f& GetAcceleration() const;
   const sf::Vector2f& GetForce() const;
   const sf::Vector2f& GetPosition() const;
-  bool Intersects(const Object& other);
+  bool Intersects(const Object& other, bool ignoreTimer = false);
 
   void Draw(sf::RenderWindow* window_p);
 
@@ -53,6 +54,7 @@ private:
   int          myTraceIdx;
   int          myTraceCount[2];
   sf::Vertex   myTrace[2][MAX_TRACE_SIZE];
-  size_t       myFrameCounter;
+  float        myTraceTime;
   sf::Color    myColor;
+  float        myCreationTime;
 };

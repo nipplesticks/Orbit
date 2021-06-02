@@ -3,12 +3,21 @@
 
 std::mutex Object::mutex_flag;
 float Object::MASS_SCALE = 1.0f;
-size_t Object::trace_res = 10;
+float Object::trace_res = 0.1f;
+float Object::NO_COL_TIMER = 2.0f;
 
 sf::Vector2f Object::GetForceBetween(const Object& a, const Object& b)
 {
   sf::Vector2f dir = b.GetPosition() - a.GetPosition();
   float dist = dir.x * dir.x + dir.y * dir.y;
+  float r1 = a.GetRadius();
+  float r2 = b.GetRadius();
+
+  if (fabs(dist) < (r1 * r1 + r2 * r2))
+  {
+    return sf::Vector2f(0.0f, 0.0f);
+  }
+
   if (fabs(dist) < EPSILON) return sf::Vector2f(0.0f, 0.0f);
   float f = (b.GetMass() * a.GetMass()) / (dist / Object::MASS_SCALE);
   sf::Vector2f n = dir * (1.0f / sqrtf(dist));
@@ -49,12 +58,14 @@ float Object::CalculateIntersectingMass(const Object& a, const Object& b)
 
 Object::Object()
 {
+  myCreationTime = (float)Global::globalGameTime.GetElapsedTime();
   myForce = sf::Vector2f(0.0f, 0.0f);
   myAcceleration = sf::Vector2f(0.0f, 0.0f);
   myVelocity = sf::Vector2f(0.0f, 0.0f);
   myTraceIdx = 0;
   memset(myTraceCount, 0, sizeof(myTraceCount));
   memset(myTrace, 0, sizeof(myTrace));
+  myTraceTime = 0.0f;
   myColor.r = rand() % 206 + 50;
   myColor.g = rand() % 206 + 50;
   myColor.b = rand() % 206 + 50;
@@ -110,8 +121,11 @@ void Object::Update(float dt)
   v.color = myColor;
   v.texCoords = sf::Vector2f(0.0f, 0.0f);
 
-  if (myFrameCounter++ % Object::trace_res == 0)
+  float timeNow = Global::globalGameTime.GetElapsedTime();
+  float timePassed = timeNow - myTraceTime;
+  if (timePassed > trace_res)
   {
+    myTraceTime = timeNow;
     if (myTraceCount[myTraceIdx] >= Object::MAX_TRACE_SIZE)
       myTraceIdx = (myTraceIdx + 1) % 2;
     myTrace[myTraceIdx][myTraceCount[myTraceIdx]++] = v;
@@ -152,8 +166,19 @@ const sf::Vector2f& Object::GetPosition() const
   return myShape.getPosition();
 }
 
-bool Object::Intersects(const Object& other)
+bool Object::Intersects(const Object& other, bool ignoreTimer)
 {
+  float gameTime = (float)Global::globalGameTime.GetElapsedTime();
+
+  if (!ignoreTimer)
+  {
+    if ((gameTime - myCreationTime) < Object::NO_COL_TIMER ||
+        (gameTime - other.myCreationTime) < Object::NO_COL_TIMER)
+    {
+      return false;
+    }
+  }
+
   float r1 = GetRadius();
   float r2 = other.GetRadius();
 

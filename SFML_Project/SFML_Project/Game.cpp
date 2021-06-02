@@ -1,9 +1,17 @@
 #include "Game.h"
 #include <iostream>
+#include "Structures.h"
+#include "HelpFunctions.h"
+
+Timer Global::globalGameTime;
+
+const float MAX_DIST_FROM_SUN = 10000.f;
+
 
 Game::Game(const sf::Vector2f& winSize) :
   myQuadTree(sf::Vector2f(0.0f,0.0f), winSize * 20.f, 7)
 {
+  Global::globalGameTime.Start();
   myTexture.loadFromFile("Assets/Untitled.png");
   myTexture.setRepeated(true);
   myTexture.generateMipmap();
@@ -14,7 +22,7 @@ Game::Game(const sf::Vector2f& winSize) :
   Object::MASS_SCALE = 2000.0f;
 
   Object obj1;
-  obj1.SetMass(99999.0f);
+  obj1.SetMass(1000.0f);
   obj1.SetPosition(winSize.x * 0.5f, winSize.y * 0.5f);
   myObjects.push_back(obj1);
   myStar_p = &myObjects.back();
@@ -84,6 +92,7 @@ void Game::Tick(float dt, sf::RenderWindow* wnd_p)
 
   std::list<Object>::iterator idx = myObjects.begin();
 
+  auto view = wnd_p->getView();
   myStar_p = nullptr;
 
   std::list<Object> newObjects;
@@ -100,14 +109,14 @@ void Game::Tick(float dt, sf::RenderWindow* wnd_p)
     myQuadTree.GetObjects(obj.GetPosition(), obj.GetRadius(), col);
     _handleCollisions(obj, col, newObjects);
 
-    if (obj.GetRadius() < 1.0f)
+    if (obj.GetRadius() < 1.0f ||
+        Help::GetDistance(view.getCenter(), obj.GetPosition()) > MAX_DIST_FROM_SUN)
     {
       removeVector.push_back(idx);
     }
     idx++;
   }
 
-  auto view = wnd_p->getView();
   if (myStar_p)
   {
     view.setCenter(myStar_p->GetPosition());
